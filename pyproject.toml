@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tdspec"
+version = "0.1.0"
+description = "A command-line and library tool for parsing and visualising TD-DFT spectra."
+authors = [
+    { name = "Matthew McRobie", email = "mtm517@york.ac.uk" }
+]
+readme = "README.md"
+requires-python = ">=3.8"
+
+# Required dependencies
+dependencies = [
+    "numpy",
+    "matplotlib",
+]
+
+# Optional extras (dev, testing, etc.)
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "coverage",
+]
+
+# Console script entrypoint
+[project.scripts]
+tdspec = "tdspec.cli:main"
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]
+
