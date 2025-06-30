@@ -3,7 +3,7 @@ import numpy as np
 import pytest, tempfile
 
 from pathlib import Path
-from tdspec.plot import gaussian, generate_spectrum, plot_spectrum, plot_vlines
+from tdspec.plot import gaussian, generate_spectrum, plot_overlay, plot_spectrum, plot_vlines
 
 
 @pytest.fixture
@@ -60,3 +60,10 @@ def test_plot_vlines_creates_file(mock_transitions):
         assert outpath.exists()
         assert outpath.stat().st_size > 0
 
+
+def test_plot_overlay(mock_transitions):
+    with tempfile.TemporaryDirectory() as tmpdir:
+        outpath = Path(tmpdir) / "overlay.png"
+        plot_overlay(mock_transitions, outpath=outpath)
+        assert outpath.exists()
+        assert outpath.stat().st_size > 0

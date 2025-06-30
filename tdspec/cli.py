@@ -2,7 +2,7 @@ import argparse, fileinput, sys
 
 from .parser import parse_qchem_tddft
 from .io_utils import write_csv
-from .plot import generate_spectrum, plot_spectrum, plot_vlines
+from .plot import generate_spectrum, plot_overlay, plot_spectrum, plot_vlines
 from pathlib import Path
 
 
@@ -18,11 +18,10 @@ def main():
     cli_parser.add_argument("-o", "--output", type=Path, help="Output file for transition data (default: <input>_transitions.csv)")
     cli_parser.add_argument("--format", "--fmt", choices=["csv", "json"], help="Force output format (default: inferred from filename)")
     cli_parser.add_argument("--engine", choices=["qchem", "gaussian"], help="Force parser engine (default: auto-detect)")
-    cli_parser.add_argument("--vlines", action="store_true", help="Generate vertical line plot of TD-DFT transitions")
-    cli_parser.add_argument("--plot", action="store_true", help="Generate a spectrum plot (spectrum.png).")
+    cli_parser.add_argument("--plot-style", choices=["spectrum", "vlines", "overlay"], help="Plotting style: 'spectrum' (simulated spectrum), 'vlines' (raw transitions), 'overlay' (both)")
     cli_parser.add_argument("--fwhm", type=float, default=0.2, help="FWHM for Gaussian broadening (default: 0.2 eV)")
     cli_parser.add_argument("--range", nargs=2, type=float, metavar=("MIN", "MAX"), help="Energy range to plot")
-    cli_parser.add_argument("--outplot", type=Path, help="Filename for plot output (default: spectrum.png)")
+    cli_parser.add_argument("--outplot", type=Path, help="Filename for plot output (default: plot.png)")
 
     args = cli_parser.parse_args()
 
@@ -52,26 +51,29 @@ def main():
             if output_format == "csv":
                 write_csv(transitions, outpath=output_path)
             elif output_format == "json":
-                write_json(transitions, outpat=output_path)
+                write_json(transitions, outpath=output_path)
 
-        if not args.output and not args.plot and not args.vlines:
+        if not args.output and not args.plot_style:
             for t in transitions:
                 print(f"State {t['state']:>3}: {t['energy_ev']:6.3f} eV | f = {t['osc_strength']:14.10f}")
 
         # Plotting
-        if args.vlines:
-            plot_vlines(transitions, outpath=args.outplot or "transitions.png")
-
-        if args.plot:
-            x, y = generate_spectrum(
-                transitions,
-                fwhm=args.fwhm,
-                energy_range=tuple(args.range) if args.range else None
-            )
-
-            plot_path = args.outplot or "spectrum.png"
-            plot_spectrum(x, y, filepath=plot_path)
-            print(f"Plot written to {plot_path}")
+        if args.plot_style:
+            outplot = args.outplot or "plot.png"
+            if args.plot_style == "spectrum":
+                x, y = generate_spectrum(
+                    transitions,
+                    fwhm=args.fwhm,
+                    energy_range=tuple(args.range) if args.range else None
+                )
+                plot_spectrum(x, y, filepath=outplot)
+                print(f"Plot written to {outplot}")
+            elif args.plot_style == "vlines":
+                plot_vlines(transitions, outpath=outplot or "transitions.png")
+                print(f"Plot written to {outplot}")
+            elif args.plot_style == "overlay":
+                plot_overlay(transitions, outpath=outplot)
+                print(f"Plot written to {outplot}")
            
     except FileNotFoundError:
         print(f"File not found: {filepath}")
