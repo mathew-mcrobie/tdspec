@@ -2,6 +2,7 @@ import argparse, fileinput, sys
 
 from .parser import parse_qchem_tddft
 from .io_utils import write_csv
+from .plot import generate_spectrum, plot_spectrum, plot_vlines
 from pathlib import Path
 
 
@@ -17,6 +18,7 @@ def main():
     cli_parser.add_argument("-o", "--output", type=Path, help="Output file for transition data (default: <input>_transitions.csv)")
     cli_parser.add_argument("--format", "--fmt", choices=["csv", "json"], help="Force output format (default: inferred from filename)")
     cli_parser.add_argument("--engine", choices=["qchem", "gaussian"], help="Force parser engine (default: auto-detect)")
+    cli_parser.add_argument("--vlines", action="store_true", help="Generate vertical line plot of TD-DFT transitions")
     cli_parser.add_argument("--plot", action="store_true", help="Generate a spectrum plot (spectrum.png).")
     cli_parser.add_argument("--fwhm", type=float, default=0.2, help="FWHM for Gaussian broadening (default: 0.2 eV)")
     cli_parser.add_argument("--range", nargs=2, type=float, metavar=("MIN", "MAX"), help="Energy range to plot")
@@ -52,16 +54,24 @@ def main():
             elif output_format == "json":
                 write_json(transitions, outpat=output_path)
 
-        if not args.output and not args.plot:
+        if not args.output and not args.plot and not args.vlines:
             for t in transitions:
                 print(f"State {t['state']:>3}: {t['energy_ev']:6.3f} eV | f = {t['osc_strength']:14.10f}")
 
         # Plotting
+        if args.vlines:
+            plot_vlines(transitions, outpath=args.outplot or "transitions.png")
+
         if args.plot:
-            #plot_spectrum()
-            raise NotImplementedError
-            if args.verbose:
-                print(f"Plot written to {args.outplot or 'spectrum.png'}")
+            x, y = generate_spectrum(
+                transitions,
+                fwhm=args.fwhm,
+                energy_range=tuple(args.range) if args.range else None
+            )
+
+            plot_path = args.outplot or "spectrum.png"
+            plot_spectrum(x, y, filepath=plot_path)
+            print(f"Plot written to {plot_path}")
            
     except FileNotFoundError:
         print(f"File not found: {filepath}")
