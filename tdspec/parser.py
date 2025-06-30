@@ -1,11 +1,16 @@
 import re
 
+from typing import Union
+from pathlib import Path
 
-def parse_qchem_tddft(filepath):
+def parse_qchem_tddft(source: Union[Path, list[str]]) -> list[dict]:
+    if isinstance(source, Path):
+        with source.open("r") as f:
+            lines = f.readlines()
+    else:
+        lines = source
+
     transitions = []
-
-    with open(filepath, "r") as f:
-        lines = f.readlines()
 
     i = 0
     while i < len(lines):
