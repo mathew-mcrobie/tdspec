@@ -67,3 +67,23 @@ def test_cli_stdin(tmp_path):
         )
 
     assert "State" in result.stdout
+
+
+def test_cli_plot_style(tmp_path):
+    input_file = tmp_path / "mock_qchem.out"
+    output_file = tmp_path / "test_plot.png"
+
+    input_file.write_text(
+        """
+        Excited state 1: excitation energy (eV) =    3.4567\n
+          strength   :    0.1234567\n
+        """
+    )
+
+    with input_file.open("rb") as f:
+        result = subprocess.run(
+            ["tdspec", str(input_file), "--plot-style", "vlines", "--outplot", str(output_file)],
+            check=True
+        )
+
+    assert output_file.exists()
