@@ -77,7 +77,12 @@ def main():
                 plot_vlines(transitions, outpath=outplot or "transitions.png")
                 print(f"Plot written to {outplot}")
             elif args.plot_style == "overlay":
-                plot_overlay(transitions, outpath=outplot)
+                plot_overlay(
+                    transitions,
+                    fwhm=args.fwhm,
+                    outpath=outplot,
+                    energy_range=tuple(args.range) if args.range else None
+                )
                 print(f"Plot written to {outplot}")
            
     except FileNotFoundError:

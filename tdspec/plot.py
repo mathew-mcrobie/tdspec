@@ -10,7 +10,7 @@ def gaussian(x, mu, fwhm):
     return np.exp(-((x - mu) ** 2) / (2 * sigma ** 2))
 
 
-def generate_spectrum(transitions, fwhm=0.2, energy_range=None, resolution=1000):
+def generate_spectrum(transitions, fwhm=0.5, energy_range=None, resolution=1000):
     if not transitions:
         raise ValueError("No transitions provided")
 
@@ -33,11 +33,15 @@ def generate_spectrum(transitions, fwhm=0.2, energy_range=None, resolution=1000)
     return x, y
 
 
-def plot_vlines(transitions, outpath="transitions.png"):
+def plot_vlines(transitions, outpath="transitions.png", energy_range=None):
     energies = [t["energy_ev"] for t in transitions]
     strengths = [t["osc_strength"] for t in transitions]
 
     plt.vlines(energies, [0], strengths, colors="red", linewidth=2.0)
+    if energy_range:
+        e_min, e_max = energy_range
+        plt.xlim(e_min, e_max)
+    plt.ylim(bottom=0)
     plt.xlabel("Energy / eV")
     plt.ylabel("Oscillator Strength")
     plt.title("TD-DFT Transitions")
@@ -46,9 +50,13 @@ def plot_vlines(transitions, outpath="transitions.png"):
     plt.close()
 
 
-def plot_spectrum(x, y, filepath="spectrum.png"):
+def plot_spectrum(x, y, filepath="spectrum.png", energy_range=None):
     plt.figure()
     plt.plot(x, y, color="black")
+    if energy_range:
+        e_min, e_max = energy_range
+        plt.xlim(e_min, e_max)
+    plt.ylim(bottom=0)
     plt.xlabel("Energy / eV")
     plt.ylabel("Intensity / a.u.")
     plt.title("Simulated TD-DFT Spectrum")
@@ -57,7 +65,7 @@ def plot_spectrum(x, y, filepath="spectrum.png"):
     plt.close()
 
 
-def plot_overlay(transitions, outpath="spectrum.png", fwhm=0.2, energy_range=None, resolution=1000):
+def plot_overlay(transitions, outpath="spectrum.png", fwhm=0.5, energy_range=None, resolution=1000):
     if not transitions:
         raise ValueError("No transitions provided")
 
@@ -71,10 +79,13 @@ def plot_overlay(transitions, outpath="spectrum.png", fwhm=0.2, energy_range=Non
     plt.plot(x, y, color="black", label="Broadened Spectrum")
     plt.xlabel("Energy / eV")
     plt.ylabel("Oscillator Strength")
+    if energy_range:
+        e_min, e_max = energy_range
+        plt.xlim(e_min, e_max)
+    plt.ylim(bottom=0)
     plt.title("TD-DFT Spectrum Overlay")
     plt.legend()
     plt.tight_layout()
     plt.savefig(outpath)
     plt.close()
-
 
