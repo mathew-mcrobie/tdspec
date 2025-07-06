@@ -1,6 +1,6 @@
 import argparse, fileinput, sys
 
-from .parser import parse_qchem_tddft
+from .parser import parse_qchem_tddft, NoTDDFTDataError
 from .io_utils import write_csv
 from .plot import generate_spectrum, plot_overlay, plot_spectrum, plot_vlines
 from pathlib import Path
@@ -34,7 +34,12 @@ def main():
                 lines = list(f)
 
         if args.engine == "qchem" or args.engine == None or args.engine == "":
-            transitions = parse_qchem_tddft(lines)
+            try:
+                transitions = parse_qchem_tddft(lines)
+            except NoTDDFTDataError as e:
+                print(f"Error: {e}")
+                print(f"Found no TD-DFT excitations in file '{e.filepath}'.")
+                sys.exit()
         else:
             raise NotImplementedError("Only Q-Chem files are currently supported.")
 

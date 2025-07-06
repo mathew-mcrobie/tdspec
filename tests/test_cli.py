@@ -85,5 +85,42 @@ def test_cli_plot_style(tmp_path):
             ["tdspec", str(input_file), "--plot-style", "vlines", "--outplot", str(output_file)],
             check=True
         )
-
     assert output_file.exists()
+
+    with input_file.open("rb") as f:
+        result = subprocess.run(
+            ["tdspec", str(input_file), "--plot-style", "spectrum", "--outplot", str(output_file)],
+            check=True
+        )
+    assert output_file.exists()
+
+    with input_file.open("rb") as f:
+        result = subprocess.run(
+            ["tdspec", str(input_file), "--plot-style", "overlay", "--outplot", str(output_file)],
+            check=True
+        )
+    assert output_file.exists()
+
+def test_custom_parser_exception_handling(tmp_path):
+    input_file = tmp_path / "no_data_input.out"
+
+    input_file.write_text(
+        """
+        The woods are lovely, dark and deep,
+        But I have promises to keep,
+        And miles to go before I sleep,
+        And miles to go before I sleep.
+        """
+    )
+        
+    result = subprocess.run(
+        ["tdspec", str(input_file)],
+        capture_output=True,
+        text=True,
+        check=False
+    )
+
+    assert "Error" in result.stdout
+    assert "Found no TD-DFT" in result.stdout
+    
+

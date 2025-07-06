@@ -3,6 +3,14 @@ import re
 from typing import Union
 from pathlib import Path
 
+
+class NoTDDFTDataError(ValueError):
+    """Raised when no TD-DFT excitation data is found in the output file."""
+    def __init__(self, filepath):
+        self.filepath = filepath
+        super().__init__(f"No TD-DFT excitation data found in '{self.filepath}'.")
+
+
 def parse_qchem_tddft(source: Union[Path, list[str]]) -> list[dict]:
     if isinstance(source, Path):
         with source.open("r") as f:
@@ -38,6 +46,10 @@ def parse_qchem_tddft(source: Union[Path, list[str]]) -> list[dict]:
             })
 
         i += 1
+
+    if not transitions:
+        source_name = str(source) if isinstance(source, Path) else "input stream"
+        raise NoTDDFTDataError(source_name)
 
     return transitions
 
